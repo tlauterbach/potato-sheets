@@ -1,0 +1,19 @@
+{
+    "name": "PotatoSheets.Editor",
+    "rootNamespace": "PotatoSheets.Editor",
+    "references": [
+        "GUID:45364bc7de9ab6c428d92f5141b8f6b6",
+        "GUID:478a2357cc57436488a56e564b08d223"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
