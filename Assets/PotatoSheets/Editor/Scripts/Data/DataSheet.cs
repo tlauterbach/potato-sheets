@@ -30,8 +30,8 @@ namespace PotatoSheets.Editor {
 			m_primaryIndex = GetFieldIndex(primaryKey);
 			if (m_primaryIndex == -1) {
 				throw new ArgumentException(
-					"No string with value `{primaryKey}' exists in fieldNames. " +
-					"Make sure primaryKey is valid before constructing."
+					$"No string with value `{primaryKey}' exists in fieldNames. " +
+					$"Make sure primaryKey is valid before constructing."
 				);
 			}
 			for (int ix = 0; ix < rows.Length; ix++) {

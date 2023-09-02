@@ -12,5 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed54fb0dedcbec74cbb29aa5b80ebd62, type: 3}
   m_Name: PotatoSheetsProfile
   m_EditorClassIdentifier: 
-  m_nextProfileIndex: 0
-  m_profiles: []
+  m_profiles:
+  - ProfileName: Profile22
+    SheetID: 
+    WorksheetName: Sheet1
+    AssetType: None
+    AssetDirectory: Assets/Data
+  - ProfileName: Profile23
+    SheetID: 
+    WorksheetName: Sheet1
+    AssetType: None
+    AssetDirectory: Assets/Data
+  m_nextProfileIndex: 24
