@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -28,6 +29,10 @@ namespace PotatoSheets {
 
 			operation.completed += x => { tcs.SetResult(null); };
 			return ((Task)tcs.Task).GetAwaiter();
+		}
+
+		public static bool IsAsset(this Type type) {
+			return typeof(ScriptableObject).IsAssignableFrom(type);
 		}
 
 	}

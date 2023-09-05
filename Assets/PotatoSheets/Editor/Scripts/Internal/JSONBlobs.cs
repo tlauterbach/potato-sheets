@@ -3,8 +3,7 @@ using System;
 namespace PotatoSheets.Editor {
 	
 
-	// SPREADSHEET BLOBS
-
+	// MetaData BLOBS
 	[Serializable]
 	internal class SpreadsheetBlob {
 		public SheetBlob[] sheets;
@@ -12,27 +11,28 @@ namespace PotatoSheets.Editor {
 	[Serializable]
 	internal class SheetBlob {
 		public PropertiesBlob properties;
-		public DataBlob[] data;
 	}
 	[Serializable]
 	internal class PropertiesBlob {
 		public string title;
+		public GridPropertiesBlob gridProperties;
 	}
 	[Serializable]
-	internal class DataBlob {
-		public RowDataBlob[] rowData;
+	internal class GridPropertiesBlob {
+		public int rowCount;
+		public int columnCount;
+		public int frozenRowCount;
 	}
+
+	// VALUES BLOBS
 	[Serializable]
-	internal class RowDataBlob {
-		public ValueBlob[] values;
-	}
-	[Serializable]
-	internal class ValueBlob {
-		public string formattedValue;
+	internal class ValueRangeBlob {
+		public string range;
+		public string majorDimension;
+		public string[][] values;
 	}
 
 	// OAUTH BLOBS
-
 	[Serializable]
 	internal class ClientSecretBlob {
 		public InstalledBlob installed;
@@ -54,6 +54,7 @@ namespace PotatoSheets.Editor {
 		public string token_type;
 		public string scope;
 		public string refresh_token;
+		public uint last_sign_in;
 	}
 
 

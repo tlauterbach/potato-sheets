@@ -16,6 +16,7 @@ namespace PotatoSheets.Editor {
 		// Internal Data
 		private Authentication m_authenticator;
 		private CredentialsBlob m_credentials;
+		private Importer m_importer;
 
 		private PotatoSheetsProfile MainProfile {
 			get { return PotatoSheetsSettings.instance.Profile; }
@@ -76,6 +77,7 @@ namespace PotatoSheets.Editor {
 			// initialize fields
 
 			m_authenticator = new Authentication();
+			m_importer = new Importer();
 
 			m_clientSecretPath = rootVisualElement.Q<TextField>("ClientSecretPath");
 			m_credentialsPath = rootVisualElement.Q<TextField>("CredentialsPath");
@@ -106,8 +108,15 @@ namespace PotatoSheets.Editor {
 			m_credentialsPath.value = PotatoSheetsSettings.instance.CredentialsPath;
 			HandleProfileChanged(PotatoSheetsSettings.instance.Profile);
 			SetOAuthMessageDisplayed(false);
+			SetProgressBarDisplayed(false);
+			RefreshAssetTypes();
 
 			// Register Callbacks
+
+			m_importer.OnProgressChanged += (s, v) => {
+				m_progressBar.value = v;
+				m_progressBar.title = s;
+			};
 
 			m_clientSecretPath.RegisterValueChangedCallback(HandleClientSecretPathChanged);
 			m_credentialsPath.RegisterValueChangedCallback(HandleCredentialsPathChanged);
@@ -125,6 +134,7 @@ namespace PotatoSheets.Editor {
 
 		public void OnProjectChange() {
 			SetProfileGroupDisplayed(PotatoSheetsSettings.instance.Profile != null);
+			RefreshAssetTypes();
 		}
 		public void OnDestroy() {
 			m_authenticator?.CancelAuthentication();
@@ -176,6 +186,22 @@ namespace PotatoSheets.Editor {
 			}
 		}
 
+		private void RefreshAssetTypes() {
+			List<string> assetTypes = new List<string>();
+			foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+				foreach (TypeInfo typeInfo in assembly.DefinedTypes) {
+					Type type = typeInfo.AsType();
+					ContentAssetAttribute contentAsset = type.GetCustomAttribute<ContentAssetAttribute>();
+					if (type.IsAsset() && contentAsset != null) {
+						assetTypes.Add($"{typeInfo.FullName}, {assembly.GetName().Name}");
+					}
+				}
+			}
+			assetTypes.Sort(StringComparer.Ordinal);
+			m_assetType.choices = assetTypes;
+		}
+
+
 		private void SetProfileGroupDisplayed(bool isDisplayed) {
 			m_profileGroup.style.display = isDisplayed ? DisplayStyle.Flex : DisplayStyle.None;
 		}
@@ -188,6 +214,9 @@ namespace PotatoSheets.Editor {
 		private void SetProfileSettingsDisplayed(bool isDisplayed) {
 			m_profileSettingsGroup.style.display = isDisplayed ? DisplayStyle.Flex : DisplayStyle.None;
 		}
+		private void SetProgressBarDisplayed(bool isDisplayed) {
+			m_progressBar.style.display = isDisplayed ? DisplayStyle.Flex : DisplayStyle.None;
+		}
 
 		private void DoAuthentication(Action importCallback) {
 			SetOAuthMessageDisplayed(true);
@@ -197,10 +226,24 @@ namespace PotatoSheets.Editor {
 			);
 		}
 		private void DoImport() {
-			
+			if (SelectedProfile == null) {
+				return;
+			}
+			m_importer.SetCredentials(m_credentials);
+			m_profileGroup.SetEnabled(false);
+			m_progressBar.value = 0f;
+			SetProgressBarDisplayed(true);
+			m_importer.Import(SelectedProfile, HandleImportComplete, HandleImportErrors);
 		}
 		private void DoImportAll() {
-			
+			if (MainProfile == null) {
+				return;
+			}
+			m_importer.SetCredentials(m_credentials);
+			m_profileGroup.SetEnabled(false);
+			m_progressBar.value = 0f;
+			SetProgressBarDisplayed(true);
+			m_importer.Import(MainProfile, HandleImportComplete, HandleImportErrors);
 		}
 
 		#region Handlers
@@ -251,14 +294,6 @@ namespace PotatoSheets.Editor {
 			SetOAuthMessageDisplayed(false);
 		}
 
-
-		private void HandleProfileSelectionChanged(IEnumerable<int> indices) {
-			foreach (int index in indices) {
-				m_selectedProfileIndex = index;
-			}
-			RefreshProfileSettings();
-		}
-
 		private void HandleProfileNameChanged(ChangeEvent<string> ev) {
 			m_profileList.contentContainer.Query<Label>().AtIndex(m_selectedProfileIndex).text = ev.newValue;
 		}
@@ -286,6 +321,18 @@ namespace PotatoSheets.Editor {
 			RefreshProfileList();
 		}
 
+
+		private void HandleImportComplete() {
+			m_profileGroup.SetEnabled(true);
+			SetProgressBarDisplayed(false);
+		}
+		private void HandleImportErrors(IEnumerable<string> errors) {
+			m_profileGroup.SetEnabled(true);
+			SetProgressBarDisplayed(false);
+			foreach (string error in errors) {
+				Debug.LogError(error);
+			}
+		}
 
 		#endregion
 

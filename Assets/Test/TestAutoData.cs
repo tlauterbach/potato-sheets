@@ -28,6 +28,11 @@ public class TestAutoData : ScriptableObject {
 	[SerializeField]
 	private TestClass m_class;
 
+	[Content("vector3")]
+	[SerializeField]
+	private Vector3 m_vector3;
 
-
+	[Content("array", Delimiter = ",")]
+	[SerializeField]
+	private char[] m_array;
 }

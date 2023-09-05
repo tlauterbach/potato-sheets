@@ -10,7 +10,14 @@ namespace PotatoSheets.Editor {
 	/// </summary>
 	public readonly struct Row : IReadOnlyDictionary<string,string> {
 
-		public string PrimaryValue { get { return m_values[m_primaryIndex]; } }
+		public string PrimaryValue { 
+			get { 
+				if (m_primaryIndex == -1) {
+					return string.Empty;
+				}
+				return m_values[m_primaryIndex]; 
+			}
+		}
 
 		public IEnumerable<string> Keys { get { return m_fieldNames; } }
 		public IEnumerable<string> Values { get { return m_values; } }
@@ -33,21 +40,15 @@ namespace PotatoSheets.Editor {
 		private readonly string[] m_values;
 
 
-		public Row(int primaryIndex, uint[] fieldHashes, string[] fieldNames, string[] values) {
-			m_primaryIndex = primaryIndex;
+		public Row(string primaryKey, string[] fieldNames, uint[] fieldHashes, string[] values) {
 			m_fieldHashes = fieldHashes;
 			m_fieldNames = fieldNames;
 			m_values = values;
+			m_primaryIndex = FindFieldIndex(fieldHashes, primaryKey);
 		}
 
 		public int FindFieldIndex(string key) {
-			uint hash = Util.FNVHash(key);
-			for (int ix = 0; ix < m_fieldHashes.Length; ix++) {
-				if (m_fieldHashes[ix] == hash) {
-					return ix;
-				}
-			}
-			return -1;
+			return FindFieldIndex(m_fieldHashes, key);
 		}
 
 		public bool ContainsKey(string key) {
@@ -72,6 +73,15 @@ namespace PotatoSheets.Editor {
 			return new Enumerator(m_fieldNames, m_values);
 		}
 
+		private static int FindFieldIndex(uint[] fieldHashes, string key) {
+			uint hash = Util.FNVHash(key);
+			for (int ix = 0; ix < fieldHashes.Length; ix++) {
+				if (fieldHashes[ix] == hash) {
+					return ix;
+				}
+			}
+			return -1;
+		}
 
 		private class Enumerator : IEnumerator<KeyValuePair<string, string>> {
 			public KeyValuePair<string, string> Current {
