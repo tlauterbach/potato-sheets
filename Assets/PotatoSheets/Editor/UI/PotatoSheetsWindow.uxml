@@ -1,4 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:VisualElement name="Separator" style="margin-top: 8px; max-height: 1px; border-left-width: 0; border-right-width: 0; border-top-width: 0; border-bottom-width: 2px; border-left-color: rgb(47, 47, 47); border-right-color: rgb(47, 47, 47); border-top-color: rgb(47, 47, 47); border-bottom-color: rgb(47, 47, 47); margin-bottom: 8px; overflow: hidden; flex-grow: 1;" />
     <ui:VisualElement name="TopSection" style="min-width: auto; overflow: hidden; align-items: stretch; flex-grow: 0; flex-shrink: 0;">
         <ui:VisualElement name="ClientSecret" style="align-items: flex-start; flex-direction: row; margin-left: 3px; margin-right: 3px; margin-top: 1px; overflow: hidden;">
             <ui:Label text="Client Secret Path" display-tooltip-when-elided="true" style="min-width: 150px; margin-right: 2px; padding-top: 2px; align-items: flex-start;" />
@@ -46,4 +47,5 @@
             <ui:Button text="Import" display-tooltip-when-elided="true" name="ImportButton" />
         </ui:VisualElement>
     </ui:VisualElement>
+    <ui:VisualElement name="Separator" style="margin-top: 8px; max-height: 1px; border-left-width: 0; border-right-width: 0; border-top-width: 0; border-bottom-width: 2px; border-left-color: rgb(47, 47, 47); border-right-color: rgb(47, 47, 47); border-top-color: rgb(47, 47, 47); border-bottom-color: rgb(47, 47, 47); margin-bottom: 8px; overflow: hidden; flex-grow: 1;" />
 </ui:UXML>
