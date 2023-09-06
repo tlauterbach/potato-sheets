@@ -45,11 +45,11 @@ namespace PotatoSheets.Editor {
 		public string BuildAssetPath(string assetName, string assetExtension = "asset") {
 			switch (m_directoryType) {
 				case DirectoryType.Empty:
-					return Path.Combine(Application.dataPath, $"Assets/{assetName}.{assetExtension}");
+					return string.Concat($"Assets/{assetName}.{assetExtension}");
 				case DirectoryType.NoSlash:
-					return Path.Combine(Application.dataPath, AssetDirectory, $"/{assetName}.{assetExtension}");
+					return string.Concat(AssetDirectory, $"/{assetName}.{assetExtension}");
 				case DirectoryType.TrailingSlash:
-					return Path.Combine(Application.dataPath, AssetDirectory, $"{assetName}.{assetExtension}");
+					return string.Concat(AssetDirectory, $"{assetName}.{assetExtension}");
 				default:
 					throw new NotImplementedException();
 			}
@@ -63,6 +63,10 @@ namespace PotatoSheets.Editor {
 			UnityEngine.Object asset = AssetDatabase.LoadAssetAtPath(path, type);
 			if (asset == null) {
 				asset = ScriptableObject.CreateInstance(type);
+				string directory = Path.GetDirectoryName(path);
+				if (!Directory.Exists(directory)) {
+					Directory.CreateDirectory(directory);
+				}
 				AssetDatabase.CreateAsset(asset, path);
 				EditorUtility.SetDirty(asset);
 			}
@@ -90,6 +94,10 @@ namespace PotatoSheets.Editor {
 		}
 
 		public void LogError(string error) {
+			((ILogger)m_state).LogError(error);
+		}
+
+		public void LogError(Exception error) {
 			((ILogger)m_state).LogError(error);
 		}
 

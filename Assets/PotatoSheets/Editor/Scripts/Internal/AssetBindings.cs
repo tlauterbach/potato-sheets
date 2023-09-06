@@ -168,7 +168,7 @@ namespace PotatoSheets.Editor {
 		private void ImportContent(IImportUtility util, Dictionary<string,List<ContentBinding>> bindings) {
 			foreach (Row row in util.DataSheet[PrimaryKey]) {
 				// find or create the asset specified by the primary value
-				string path = util.BuildAssetPath(util.AssetDirectory, row.PrimaryValue);
+				string path = util.BuildAssetPath(row.PrimaryValue);
 				UnityEngine.Object asset = util.FindOrCreateAsset(m_assetType, path);
 
 				foreach (KeyValuePair<string, string> item in row) {
@@ -197,6 +197,7 @@ namespace PotatoSheets.Editor {
 					logger.LogError($"ContentAttribute on property `{info.Name}' in type " +
 						$"`{owner.m_assetType.Name}' requires a non-empty delimiter be set on the attribute");
 				}
+				m_delimiter = delimiter;
 			}
 			public ContentBinding(AssetBindings owner, ILogger logger, FieldInfo info, string delimiter = default) {
 				m_field = info;
@@ -205,6 +206,7 @@ namespace PotatoSheets.Editor {
 					logger.LogError($"ContentAttribute on field `{info.Name}' in type " +
 						$"`{owner.m_assetType.Name}' requires a non-empty delimiter be set on the attribute");
 				}
+				m_delimiter = delimiter;
 			}
 			public void SetValue(object target, string value) {
 				object converted;

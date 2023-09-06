@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JsonParser;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
@@ -11,17 +12,17 @@ namespace PotatoSheets.Editor {
 
 		public IEnumerable<PotatoSheetsProfile.Profile> Profiles { get; }
 
-		private List<string> m_errors;
+		private List<Exception> m_errors;
 		private Action m_onComplete;
-		private Action<IEnumerable<string>> m_onError;
+		private Action<IEnumerable<Exception>> m_onError;
 		private Dictionary<WorksheetID, PropertiesBlob> m_metaData;
 		private Dictionary<WorksheetID, DataSheet> m_dataSheets;
 		private Dictionary<string, AssetBindings> m_assetBindings;
 
 		private const string ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-		public ImportState(IEnumerable<PotatoSheetsProfile.Profile> profiles, Action onComplete, Action<IEnumerable<string>> onError) {
-			m_errors = new List<string>();
+		public ImportState(IEnumerable<PotatoSheetsProfile.Profile> profiles, Action onComplete, Action<IEnumerable<Exception>> onError) {
+			m_errors = new List<Exception>();
 			m_metaData = new Dictionary<WorksheetID,PropertiesBlob>();
 			m_dataSheets = new Dictionary<WorksheetID, DataSheet>();
 			m_assetBindings = new Dictionary<string, AssetBindings>();
@@ -31,11 +32,10 @@ namespace PotatoSheets.Editor {
 			m_onError = onError;
 		}
 
-		public ImportState AddError(string error) {
-			m_errors.Add(error);
-			return this;
-		}
 		public void LogError(string error) {
+			m_errors.Add(new Exception(error));
+		}
+		public void LogError(Exception error) {
 			m_errors.Add(error);
 		}
 		public void LogWarning(string warning) {

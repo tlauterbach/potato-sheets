@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 519348fee11a69d418bdbd64b6f325ad, type: 3}
+  m_Name: Test6
+  m_EditorClassIdentifier: 
+  m_integer: 6
+  m_string: Six
+  m_double: 12
+  m_assetRef: {fileID: 11400000, guid: 75861c02d597e644cbf073f73c363e9d, type: 2}
+  m_struct:
+    m_data: final struct
+  m_class:
+    m_data: final class
+  m_vector3: {x: 8, y: 54.4, z: 9.1}
+  m_array: 7500760077007800

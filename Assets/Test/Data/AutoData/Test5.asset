@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 519348fee11a69d418bdbd64b6f325ad, type: 3}
+  m_Name: Test5
+  m_EditorClassIdentifier: 
+  m_integer: 5
+  m_string: Five
+  m_double: 10
+  m_assetRef: {fileID: 11400000, guid: 8d06b74eef5e8444d82da1eacb2f0397, type: 2}
+  m_struct:
+    m_data: the 5th struct
+  m_class:
+    m_data: 5th class
+  m_vector3: {x: 13, y: 14, z: 15.5}
+  m_array: 7100720073007400

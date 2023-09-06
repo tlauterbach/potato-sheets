@@ -1,17 +1,17 @@
 ﻿using PotatoSheets;
 #if UNITY_EDITOR
 using PotatoSheets.Editor;
-using System.Collections.Generic;
 #endif
+using System.Collections.Generic;
 using UnityEngine;
 
 [ContentAsset(ImportType.Manual, "key")]
 public class TestManualData : ScriptableObject {
 
 	[SerializeField]
-	private List<string> m_keys;
+	private List<string> m_keys = new List<string>();
 	[SerializeField]
-	private List<string> m_values;
+	private List<string> m_values = new List<string>();
 
 #if UNITY_EDITOR
 	public static void Import(IImportUtility util) {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JsonParser;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -23,6 +24,7 @@ namespace PotatoSheets.Editor {
 		private CredentialsBlob m_credentials;
 		private List<FetchRoutine<SpreadsheetBlob>> m_metaDataRoutines;
 		private List<FetchRoutine<ValueRangeBlob>> m_valuesRoutines;
+		private JsonParser.JsonParser m_jsonParser = new JsonParser.JsonParser();
 
 		private const string METADATA_ENDPOINT = "https://sheets.googleapis.com/v4/spreadsheets/{0}?fields=sheets.properties(title,gridProperties)";
 		private const string VALUES_ENDPOINT = "https://sheets.googleapis.com/v4/spreadsheets/{0}/values/{1}?majorDimension=ROWS";
@@ -32,10 +34,10 @@ namespace PotatoSheets.Editor {
 			m_credentials = blob;
 		}
 
-		public void Import(PotatoSheetsProfile profile, Action onComplete, Action<IEnumerable<string>> onError) {
+		public void Import(PotatoSheetsProfile profile, Action onComplete, Action<IEnumerable<Exception>> onError) {
 			Import((IEnumerable<PotatoSheetsProfile.Profile>)profile, onComplete, onError);
 		}
-		public void Import(PotatoSheetsProfile.Profile profile, Action onComplete, Action<IEnumerable<string>> onError) {
+		public void Import(PotatoSheetsProfile.Profile profile, Action onComplete, Action<IEnumerable<Exception>> onError) {
 			Import(new List<PotatoSheetsProfile.Profile>() { profile }, onComplete, onError);
 		}
 
@@ -43,15 +45,15 @@ namespace PotatoSheets.Editor {
 
 		}
 
-		private void Import(IEnumerable<PotatoSheetsProfile.Profile> profiles, Action onComplete, Action<IEnumerable<string>> onError) {
+		private void Import(IEnumerable<PotatoSheetsProfile.Profile> profiles, Action onComplete, Action<IEnumerable<Exception>> onError) {
 			ImportState state = new ImportState(profiles, onComplete, onError);
 			// if we're already importing, ignore the request and error
 			if (IsImporting) {
-				state.AddError("Already trying to Import. Did you forget to Abort?");
+				state.LogError("Already trying to Import. Did you forget to Abort?");
 			}
 			// credentials are required to import
 			if (m_credentials == null) {
-				state.AddError("No credentials have been assigned. Call `SetCredentials' before importing");
+				state.LogError("No credentials have been assigned. Call `SetCredentials' before importing");
 			}
 			// confirm that all of the requested profiles can bind properly
 			foreach (PotatoSheetsProfile.Profile profile in profiles) {
@@ -102,7 +104,8 @@ namespace PotatoSheets.Editor {
 				string url = string.Format(METADATA_ENDPOINT, sheetIDs[ix]);
 
 				m_metaDataRoutines.Add(new FetchRoutine<SpreadsheetBlob>(
-					this, sheetProfiles[ix], url
+					this, sheetProfiles[ix], url, 
+					x => JsonUtility.FromJson<SpreadsheetBlob>(x.downloadHandler.text)
 				));
 			}
 			yield return WaitForFetchesToComplete(m_metaDataRoutines);
@@ -137,7 +140,7 @@ namespace PotatoSheets.Editor {
 					worksheets.Add(id);
 					sheetProfiles.Add(profile.ProfileName);
 				} else {
-					m_state.AddError($"Error in profile {profile.ProfileName}: worksheet `{profile.WorksheetName}' does not exist on the specified spreadsheet identity");
+					m_state.LogError($"Error in profile {profile.ProfileName}: worksheet `{profile.WorksheetName}' does not exist on the specified spreadsheet identity");
 				}
 			}
 			Assert.AreEqual(worksheets.Count, sheetProfiles.Count);
@@ -157,9 +160,12 @@ namespace PotatoSheets.Editor {
 						worksheets[ix].SheetID,
 						$"{worksheets[ix].WorksheetName}!A1:{a1Max}"
 					);
-					m_valuesRoutines.Add(new FetchRoutine<ValueRangeBlob>(this, sheetProfiles[ix], url));
+					m_valuesRoutines.Add(new FetchRoutine<ValueRangeBlob>(
+						this, sheetProfiles[ix], url,
+						x => new ValueRangeBlob(m_jsonParser.Parse(x.downloadHandler.text))
+					));
 				} else {
-					m_state.AddError($"Error in {sheetProfiles[ix]}: Could not determine the size of the worksheet. Is the google data bad?");
+					m_state.LogError($"Error in {sheetProfiles[ix]}: Could not determine the size of the worksheet. Is the google data bad?");
 				}
 			}
 			if (m_state.HasErrors) {
@@ -180,15 +186,19 @@ namespace PotatoSheets.Editor {
 			DataSheet dataSheet;
 			AssetBindings bindings;
 			float value = 0.6f;
-			foreach (PotatoSheetsProfile.Profile profile in profiles) {
-				SetProgress("Executing Import...", value);
-				WorksheetID worksheetID = new WorksheetID(profile.SheetID, profile.WorksheetName);
-				dataSheet = m_state.GetDataSheet(worksheetID);
-				bindings = m_state.GetAssetBindings(profile.AssetType);
-				util.Reset(dataSheet, profile.AssetDirectory);
+			try {
+				foreach (PotatoSheetsProfile.Profile profile in profiles) {
+					SetProgress("Executing Import...", value);
+					WorksheetID worksheetID = new WorksheetID(profile.SheetID, profile.WorksheetName);
+					dataSheet = m_state.GetDataSheet(worksheetID);
+					bindings = m_state.GetAssetBindings(profile.AssetType);
+					util.Reset(dataSheet, profile.AssetDirectory);
 				
-				bindings.Import(util);
-				value += (1f / profiles.Count()) * 0.15f;
+					bindings.Import(util);
+					value += (1f / profiles.Count()) * 0.15f;
+				}
+			} catch (Exception e) {
+				m_state.LogError(e);
 			}
 			if (m_state.HasErrors) {
 				Cleanup();
@@ -196,15 +206,23 @@ namespace PotatoSheets.Editor {
 			}
 
 			// 9. use added bindings to do the LateImport stage
-			foreach (PotatoSheetsProfile.Profile profile in profiles) {
-				SetProgress("Executing Late Import...", value);
-				WorksheetID worksheetID = new WorksheetID(profile.SheetID, profile.WorksheetName);
-				dataSheet = m_state.GetDataSheet(worksheetID);
-				bindings = m_state.GetAssetBindings(profile.AssetType);
-				util.Reset(dataSheet, profile.AssetDirectory);
+			try {
+				foreach (PotatoSheetsProfile.Profile profile in profiles) {
+					SetProgress("Executing Late Import...", value);
+					WorksheetID worksheetID = new WorksheetID(profile.SheetID, profile.WorksheetName);
+					dataSheet = m_state.GetDataSheet(worksheetID);
+					bindings = m_state.GetAssetBindings(profile.AssetType);
+					util.Reset(dataSheet, profile.AssetDirectory);
 
-				bindings.LateImport(util);
-				value += (1f / profiles.Count()) * 0.15f;
+					bindings.LateImport(util);
+					value += (1f / profiles.Count()) * 0.15f;
+				}
+			} catch (Exception e) {
+				m_state.LogError(e.Message);
+			}
+			if (m_state.HasErrors) {
+				Cleanup();
+				yield break;
 			}
 
 			// 10. save the asset database now that everything is imported
@@ -267,10 +285,12 @@ namespace PotatoSheets.Editor {
 			private EditorCoroutine m_routine;
 			private UnityWebRequest m_request;
 			private UnityWebRequestAsyncOperation m_operation;
+			private Func<UnityWebRequest, T> m_converter;
 
-			public FetchRoutine(Importer importer, string profiles, string url) {
+			public FetchRoutine(Importer importer, string profiles, string url, Func<UnityWebRequest,T> converter) {
 				m_importer = importer;
 				m_profiles = profiles;
+				m_converter = converter;
 				m_request = UnityWebRequest.Get(url);
 				m_request.SetRequestHeader("Authorization", $"Bearer {importer.m_credentials.access_token}");
 				m_operation = m_request.SendWebRequest();
@@ -296,16 +316,16 @@ namespace PotatoSheets.Editor {
 				} else if (m_operation != null && m_operation.isDone) {
 					if (m_request.result == UnityWebRequest.Result.Success) {
 						try {
-							Result = JsonUtility.FromJson<T>(m_request.downloadHandler.text);
+							Result = m_converter(m_request);
 						} catch (Exception e) {
 							Result = default;
-							m_importer.m_state.AddError($"Error parsing {typeof(T).Name}: {e.Message}");
+							m_importer.m_state.LogError($"Error parsing {typeof(T).Name}: {e.Message}");
 						}
 					} else {
 						if (m_request.downloadHandler == null) {
-							m_importer.m_state.AddError($"Error fetching {m_profiles}: {m_request.error}");
+							m_importer.m_state.LogError($"Error fetching {m_profiles}: {m_request.error}");
 						} else {
-							m_importer.m_state.AddError($"Error fetching {m_profiles}: {m_request.error}\n{m_request.downloadHandler.text}");
+							m_importer.m_state.LogError($"Error fetching {m_profiles}: {m_request.error}\n{m_request.downloadHandler.text}");
 						}
 					}
 					IsDone = true;

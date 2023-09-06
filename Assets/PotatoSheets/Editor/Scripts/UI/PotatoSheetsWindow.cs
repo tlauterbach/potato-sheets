@@ -326,11 +326,11 @@ namespace PotatoSheets.Editor {
 			m_profileGroup.SetEnabled(true);
 			SetProgressBarDisplayed(false);
 		}
-		private void HandleImportErrors(IEnumerable<string> errors) {
+		private void HandleImportErrors(IEnumerable<Exception> errors) {
 			m_profileGroup.SetEnabled(true);
 			SetProgressBarDisplayed(false);
-			foreach (string error in errors) {
-				Debug.LogError(error);
+			foreach (Exception error in errors) {
+				Debug.LogException(error);
 			}
 		}
 

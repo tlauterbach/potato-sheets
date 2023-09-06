@@ -1,3 +1,4 @@
+using JsonParser;
 using System;
 
 namespace PotatoSheets.Editor {
@@ -30,6 +31,23 @@ namespace PotatoSheets.Editor {
 		public string range;
 		public string majorDimension;
 		public string[][] values;
+
+		public ValueRangeBlob(JsonBlob blob) {
+			range = blob["range"].AsString;
+			majorDimension = blob["majorDimension"].AsString;
+			JsonBlob array = blob["values"];
+			int size = array.Count;
+			values = new string[size][];
+			for (int ix = 0; ix < size; ix++) {
+				int subSize = array[ix].Count;
+				values[ix] = new string[subSize];
+				for (int iy = 0; iy < subSize; iy++) {
+					values[ix][iy] = array[ix][iy].AsString;
+				}
+			}
+
+		}
+
 	}
 
 	// OAUTH BLOBS

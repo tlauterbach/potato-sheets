@@ -44,11 +44,12 @@ namespace PotatoSheets.Editor {
 		public static T[] Convert<T>(string value, string delimiter) {
 			return Convert(typeof(T), value, delimiter) as T[];
 		}
-		public static object[] Convert(Type type, string value, string delimiter) {
+		public static object Convert(Type type, string value, string delimiter) {
+			Type elementType = type.GetElementType();
 			string[] split = value.Split(delimiter);
-			object[] result = new object[split.Length];
+			Array result = Array.CreateInstance(elementType, split.Length);
 			for (int ix = 0; ix < split.Length; ix++) {
-				result[ix] = Convert(type, split[ix]);
+				result.SetValue(Convert(elementType, split[ix].Trim()), ix);
 			}
 			return result;
 		}
@@ -114,7 +115,7 @@ namespace PotatoSheets.Editor {
 			string[] split = value.Split(',');
 			float[] floats = new float[Math.Max(split.Length, minSize)];
 			for (int ix = 0; ix < floats.Length; ix++) {
-				if (ix < split.Length && float.TryParse(split[ix], out float result)) {
+				if (ix < split.Length && float.TryParse(split[ix].Trim(), out float result)) {
 					floats[ix] = result;
 				} else {
 					floats[ix] = default(float);
