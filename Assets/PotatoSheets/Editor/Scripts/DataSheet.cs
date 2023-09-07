@@ -7,19 +7,13 @@ namespace PotatoSheets.Editor {
 	public class DataSheet {
 		public WorksheetID Id { get; }
 		public IEnumerable<string> FieldNames { get { return m_fieldNames; } }
-		public int FieldCount { get { return m_fieldHashes.Length; } }
-		public int Count { get { return m_rows.Length; } }
-
-		public Row this[string primaryKey, int index] {
-			get { return GetRow(primaryKey,index); }
-		}
-		public IEnumerable<Row> this[string primaryKey] {
-			get { return GetRows(primaryKey); }
-		}
+		public int RowCount { get { return m_rows.Length; } }
+		public int ColumnCount { get { return m_columns.Length; } }
 
 		private readonly string[] m_fieldNames;
 		private readonly uint[] m_fieldHashes;
 		private readonly string[][] m_rows;
+		private readonly string[][] m_columns;
 
 		internal DataSheet(WorksheetID id, ValueRangeBlob valueRange, int frozenRows) {
 			
@@ -55,6 +49,20 @@ namespace PotatoSheets.Editor {
 				rows.Add(row);
 			}
 			m_rows = rows.ToArray();
+
+			// add all of the rows as columns for extra data simplification
+			List<string[]> columns = new List<string[]>();
+			if (m_rows.Length > 0) {
+				for (int ix = 0; ix < m_rows[0].Length; ix++) {
+					columns.Add(new string[m_rows.Length]);
+				}
+				for (int ix = 0; ix < m_rows.Length; ix++) {
+					for (int iy = 0; iy < m_rows[ix].Length; iy++) {
+						columns[iy][ix] = m_rows[ix][iy];
+					}
+				}
+			}
+			m_columns = columns.ToArray();
 		}
 
 
@@ -86,6 +94,18 @@ namespace PotatoSheets.Editor {
 			Enumerator enumerator = new Enumerator(this, primaryKey);
 			while (enumerator.MoveNext()) {
 				yield return enumerator.Current;
+			}
+		}
+		public Column GetColumn(string fieldName) {
+			int fieldIndex = GetFieldIndex(fieldName);
+			if (fieldIndex == -1) {
+				throw new KeyNotFoundException($"No field with name `{fieldName}' exists in the DataSheet");
+			}
+			return new Column(fieldName, m_columns[fieldIndex]);
+		}
+		public IEnumerable<Column> GetColumns() {
+			for (int ix = 0; ix < m_fieldNames.Length; ix++) {
+				yield return new Column(m_fieldNames[ix], m_columns[ix]);
 			}
 		}
 

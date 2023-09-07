@@ -98,6 +98,7 @@ namespace PotatoSheets.Editor {
 			m_worksheetName = rootVisualElement.Q<TextField>("WorksheetName");
 			m_assetType = rootVisualElement.Q<DropdownField>("AssetType");
 			m_assetDirectory = rootVisualElement.Q<TextField>("AssetDirectory");
+			m_importButton = rootVisualElement.Q<Button>("ImportButton");
 
 			m_oauthWaitMessage = rootVisualElement.Q("OAuthWaitMessage");
 			m_oauthWaitCancelButton = rootVisualElement.Q<Button>("OAuthWaitCancelButton");
@@ -128,6 +129,7 @@ namespace PotatoSheets.Editor {
 			m_removeButton.RegisterCallback<MouseDownEvent>(HandleRemoveProfileButton, TrickleDown.TrickleDown);
 			m_profileCreateNewButton.RegisterCallback<MouseDownEvent>(HandleProfileCreateNewButton, TrickleDown.TrickleDown);
 			m_importAllButton.RegisterCallback<MouseDownEvent>(HandleImportAllButton, TrickleDown.TrickleDown);
+			m_importButton.RegisterCallback<MouseDownEvent>(HandleImportButton, TrickleDown.TrickleDown);
 			m_oauthWaitCancelButton.RegisterCallback<MouseDownEvent>(HandleOAuthWaitCancelButton, TrickleDown.TrickleDown);
 
 		}
@@ -274,6 +276,10 @@ namespace PotatoSheets.Editor {
 		private void HandleImportAllButton(MouseDownEvent ev) {
 			DoAuthentication(DoImportAll);
 		}
+		private void HandleImportButton(MouseDownEvent ev) {
+			DoAuthentication(DoImport);
+		}
+
 		private void HandleOAuthWaitCancelButton(MouseDownEvent ev) {
 			m_authenticator.CancelAuthentication();
 			SetOAuthMessageDisplayed(false);

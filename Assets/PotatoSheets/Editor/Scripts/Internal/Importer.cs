@@ -218,7 +218,7 @@ namespace PotatoSheets.Editor {
 					value += (1f / profiles.Count()) * 0.15f;
 				}
 			} catch (Exception e) {
-				m_state.LogError(e.Message);
+				m_state.LogError(e);
 			}
 			if (m_state.HasErrors) {
 				Cleanup();

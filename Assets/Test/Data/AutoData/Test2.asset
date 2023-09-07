@@ -15,7 +15,7 @@ MonoBehaviour:
   m_integer: 2
   m_string: Two
   m_double: 4
-  m_assetRef: {fileID: 11400000, guid: 584ed5a6fb9ce1246bcc8ede6a4f376c, type: 2}
+  m_assetRef: {fileID: 11400000, guid: bab359c80dbab1846800ae89e4ff4953, type: 2}
   m_struct:
     m_data: Test 2 struct
   m_class:

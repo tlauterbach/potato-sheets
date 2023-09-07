@@ -14,28 +14,36 @@ public class TestManualData : ScriptableObject {
 	private List<string> m_values = new List<string>();
 
 #if UNITY_EDITOR
-	public static void Import(IImportUtility util) {
-		Dictionary<string, TestManualData> assets = new Dictionary<string, TestManualData>();
 
+	private static Dictionary<string, TestManualData> m_assets;
+
+	public static void Import(IImportUtility util) {
+		if (m_assets == null) {
+			m_assets = new Dictionary<string, TestManualData>();
+		}
 		foreach (string field in util.DataSheet.FieldNames) {
-			if (field == "key") {
+			if (field == "key" || m_assets.ContainsKey(field)) {
 				continue;
 			}
-			assets.Add(field, util.FindOrCreateAsset<TestManualData>(util.BuildAssetPath(field)));
-		}
-		foreach (Row row in util.DataSheet.GetRows("key")) {
-			foreach (string field in row.Keys) {
-				if (field == "key") {
-					continue;
-				}
-				assets[field].m_keys.Add(row.PrimaryValue);
-				assets[field].m_values.Add(row[field]);
-			}
+			TestManualData data = util.FindOrCreateAsset<TestManualData>(util.BuildAssetPath(field));
+			data.m_keys.Clear();
+			data.m_values.Clear();
+			m_assets.Add(field, data);
 		}
 	}
 
 	public static void LateImport(IImportUtility util) {
 
+		util.DataSheet.GetColumn("key").Copy(out string[] keys);
+
+		foreach (Column column in util.DataSheet.GetColumns()) {
+			if (column.FieldName == "key") {
+				continue;
+			}
+			TestManualData data = m_assets[column.FieldName];
+			data.m_keys.AddRange(keys);
+			data.m_values.AddRange(column);
+		}
 	}
 
 #endif
