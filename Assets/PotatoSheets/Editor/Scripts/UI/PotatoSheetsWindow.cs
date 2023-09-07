@@ -220,7 +220,8 @@ namespace PotatoSheets.Editor {
 
 		private void DoAuthentication(Action importCallback) {
 			SetOAuthMessageDisplayed(true);
-			m_authenticator.Authenticate(PotatoSheetsSettings.instance,
+			m_authenticator.Authenticate(
+				PotatoSheetsSettings.instance,
 				x => HandleAuthenticationComplete(x,importCallback),
 				HandleAuthenticationError
 			);
@@ -271,11 +272,7 @@ namespace PotatoSheets.Editor {
 
 
 		private void HandleImportAllButton(MouseDownEvent ev) {
-			if (m_credentials == null) {
-				DoAuthentication(DoImportAll);
-			} else {
-				DoImportAll();
-			}
+			DoAuthentication(DoImportAll);
 		}
 		private void HandleOAuthWaitCancelButton(MouseDownEvent ev) {
 			m_authenticator.CancelAuthentication();

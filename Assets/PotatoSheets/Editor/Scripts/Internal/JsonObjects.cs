@@ -72,7 +72,7 @@ namespace PotatoSheets.Editor {
 		public string token_type;
 		public string scope;
 		public string refresh_token;
-		public uint last_sign_in;
+		public string last_sign_in;
 	}
 
 

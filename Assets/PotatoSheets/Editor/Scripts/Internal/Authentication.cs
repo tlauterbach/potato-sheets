@@ -31,13 +31,14 @@ namespace PotatoSheets.Editor {
 				onError("Already trying to Authenticate. Did you forget to cancel?");
 				return;
 			}
-			
+
 			// see if we already have existing credentials
 			string credentialsPath = Path.Combine(Application.dataPath, settings.CredentialsPath);
+			bool refreshToken = false;
 
+			CredentialsBlob credentials = null;
 			if (File.Exists(credentialsPath)) {
 				// load the credentials
-				CredentialsBlob credentials;
 				try {
 					credentials = JsonUtility.FromJson<CredentialsBlob>(File.ReadAllText(credentialsPath));
 				} catch (Exception e) {
@@ -48,8 +49,16 @@ namespace PotatoSheets.Editor {
 					onError($"No access token could be loaded from the credentials. You may have to delete your credentials file.");
 					return;
 				}
-				onComplete(credentials);
-				return;
+				// check the timestamps to see if we need to do a refresh
+				if (DateTime.TryParse(credentials.last_sign_in, out DateTime lastSignIn)) {
+					if (DateTime.Now < lastSignIn + TimeSpan.FromSeconds(credentials.expires_in)) {
+						// we do not need to refresh
+						onComplete(credentials);
+						return;
+					}
+				}
+				// we need to refresh our token
+				refreshToken = true;
 			}
 
 			// the client secret file must exist to get credentials
@@ -66,51 +75,71 @@ namespace PotatoSheets.Editor {
 				return;
 			}
 
+
 			// start the asynchronus process of getting credentials
 			m_onComplete = onComplete;
 			m_onError = onError;
 			m_credentialsPath = credentialsPath;
 			IsAuthenticating = true;
 
-			// Create an HTTP Listener to wait for a response from google
-			{
-				if (m_listener != null) {
-					m_listener.Stop();
-				}
-				m_listener = new HttpListener();
-				for (int ix = 0; ix < m_clientSecretBlob.installed.redirect_uris.Length; ix++) {
-					string prefix = m_clientSecretBlob.installed.redirect_uris[ix];
-					if (prefix[^1] != '/') {
-						m_listener.Prefixes.Add(m_clientSecretBlob.installed.redirect_uris[ix] + '/');
+			if (refreshToken) {
+				// call the endpoint to get a refreshed token
+				{
+					string url = CreateURL(m_clientSecretBlob.installed.token_uri,
+						new Dictionary<string, string>() {
+							{ "client_id", m_clientSecretBlob.installed.client_id },
+							{ "client_secret", m_clientSecretBlob.installed.client_secret },
+							{ "scope", SCOPES },
+							{ "refresh_token", credentials.refresh_token },
+							{ "grant_type", "refresh_token" }
+					});
+					UnityWebRequest request = UnityWebRequest.Post(url, string.Empty);
+					request.SetRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+					// actually send the request
+					UnityWebRequestAsyncOperation operation = request.SendWebRequest();
+					if (operation.isDone) {
+						RefreshCallback(request, credentials.refresh_token);
 					} else {
-						m_listener.Prefixes.Add(m_clientSecretBlob.installed.redirect_uris[ix]);
+						operation.completed += x => RefreshCallback(request, credentials.refresh_token);
 					}
-
 				}
-				m_listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
-				m_listener.Start();
-				m_listenerRoutine = EditorCoroutineUtility.StartCoroutine(WaitForOAuth(), this);
+
+			} else {
+				// Create an HTTP Listener to wait for a response from google
+				{
+					if (m_listener != null) {
+						m_listener.Stop();
+					}
+					m_listener = new HttpListener();
+					for (int ix = 0; ix < m_clientSecretBlob.installed.redirect_uris.Length; ix++) {
+						string prefix = m_clientSecretBlob.installed.redirect_uris[ix];
+						if (prefix[^1] != '/') {
+							m_listener.Prefixes.Add(m_clientSecretBlob.installed.redirect_uris[ix] + '/');
+						} else {
+							m_listener.Prefixes.Add(m_clientSecretBlob.installed.redirect_uris[ix]);
+						}
+
+					}
+					m_listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
+					m_listener.Start();
+					m_listenerRoutine = EditorCoroutineUtility.StartCoroutine(WaitForOAuth(), this);
+				}
+
+				// build the OAuth URL to send client info to and start sign in flow
+				{
+					string url = CreateURL(m_clientSecretBlob.installed.auth_uri,
+						new Dictionary<string, string>() {
+							{ "client_id", m_clientSecretBlob.installed.client_id },
+							{ "redirect_uri", m_clientSecretBlob.installed.redirect_uris[0] },
+							{ "response_type", "code" },
+							{ "access_type", "offline" },
+							{ "scope", SCOPES }
+					});
+					Application.OpenURL(url);
+				}
 			}
 
-			// build the OAuth URL to send client info to and start sign in flow
-			{
-				StringBuilder builder = new StringBuilder();
-				builder.Append(m_clientSecretBlob.installed.auth_uri).Append('?');
-				Dictionary<string, string> arguments = new Dictionary<string, string>() {
-					{ "client_id", m_clientSecretBlob.installed.client_id },
-					{ "redirect_uri", m_clientSecretBlob.installed.redirect_uris[0] },
-					{ "response_type", "code" },
-					{ "access_type", "offline" },
-					{ "scope", SCOPES }
-				};
-				foreach (KeyValuePair<string, string> kvp in arguments) {
-					builder.Append(kvp.Key).Append('=').Append(kvp.Value).Append('&');
-				}
-				// remove trailing ampersand
-				builder.Length--;
-
-				Application.OpenURL(builder.ToString());
-			}
 		}
 
 		public void CancelAuthentication() {
@@ -170,22 +199,15 @@ namespace PotatoSheets.Editor {
 		}
 
 		private void RequestToken(ClientSecretBlob blob, string code) {
-			StringBuilder builder = new StringBuilder();
-			builder.Append(blob.installed.token_uri).Append('?');
-			Dictionary<string, string> arguments = new Dictionary<string, string>() {
+			string url = CreateURL(blob.installed.token_uri, new Dictionary<string, string>() {
 				{ "client_id", blob.installed.client_id },
 				{ "client_secret", blob.installed.client_secret },
 				{ "code", code },
 				{ "grant_type", "authorization_code" },
 				{ "redirect_uri", blob.installed.redirect_uris[0] }
-			};
-			foreach (KeyValuePair<string, string> kvp in arguments) {
-				builder.Append(kvp.Key).Append('=').Append(kvp.Value).Append('&');
-			}
-			// remove trailing ampersand
-			builder.Length--;
+			});
 
-			UnityWebRequest request = UnityWebRequest.Post(builder.ToString(), string.Empty);
+			UnityWebRequest request = UnityWebRequest.Post(url, string.Empty);
 			request.SetRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
 			// actually send the request
@@ -200,14 +222,50 @@ namespace PotatoSheets.Editor {
 		private void TokenCallback(UnityWebRequest request) {
 			if (request.result == UnityWebRequest.Result.Success) {
 
-				File.WriteAllText(m_credentialsPath, request.downloadHandler.text);
+				CredentialsBlob result = JsonUtility.FromJson<CredentialsBlob>(request.downloadHandler.text);
+				result.last_sign_in = DateTime.Now.ToString();
 
-				m_onComplete?.Invoke(JsonUtility.FromJson<CredentialsBlob>(request.downloadHandler.text));
+				File.WriteAllText(m_credentialsPath, JsonUtility.ToJson(result));
+
+				m_onComplete?.Invoke(result);
 			} else {
 				m_onError?.Invoke("Error: " + request.error + ": " + request.downloadHandler.text);
 			}
 			request.Dispose();
 			Reset();
+		}
+
+		private void RefreshCallback(UnityWebRequest request, string refreshToken) {
+			if (request.result == UnityWebRequest.Result.Success) {
+
+				CredentialsBlob result = JsonUtility.FromJson<CredentialsBlob>(request.downloadHandler.text);
+				result.last_sign_in = DateTime.Now.ToString();
+				// rewrite the refresh token to our blob
+				result.refresh_token = refreshToken;
+
+				File.WriteAllText(m_credentialsPath, JsonUtility.ToJson(result));
+
+				m_onComplete?.Invoke(result);
+
+			} else {
+				m_onError?.Invoke("Error: " + request.error + ": " + request.downloadHandler.text);
+			}
+			request.Dispose();
+			Reset();
+		}
+
+
+		private static string CreateURL(string baseURL, Dictionary<string,string> arguments) {
+
+			StringBuilder builder = new StringBuilder();
+			builder.Append(baseURL).Append('?');
+			foreach (KeyValuePair<string, string> kvp in arguments) {
+				builder.Append(kvp.Key).Append('=').Append(kvp.Value).Append('&');
+			}
+			// remove trailing ampersand or ?
+			builder.Length--;
+
+			return builder.ToString();
 		}
 
 	}
