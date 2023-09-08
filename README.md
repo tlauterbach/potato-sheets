@@ -286,10 +286,64 @@ The `DataSheet` property of `IImportUtility` contains all of the data that was r
 
 
 ### Manual Import Example
- A good example of something that likely needs _Manual_ importing is **Localization** data being in the same worksheet but requiring assets per column. 
+A good example of something that likely needs _Manual_ importing is **Localization** data being in the same worksheet but requiring assets per column. 
 
+![](img/potato_sheets_08.png)
+
+```csharp
+using PotatoSheets;
+#if UNITY_EDITOR
+using PotatoSheets.Editor;
+#endif
+using System.Collections.Generic;
+using UnityEngine;
+
+[ContentAsset(ImportType.Manual, "key")]
+public class Localization : ScriptableObject {
+
+  [SerializeField]
+  private List<string> m_keys = new List<string>();
+  [SerializeField]
+  private List<string> m_values = new List<string>();
+
+#if UNITY_EDITOR
+
+  private static Dictionary<string, TestManualData> m_assets;
+
+  public static void Import(IImportUtility util) {
+    if (m_assets == null) {
+      m_assets = new Dictionary<string, TestManualData>();
+    }
+    foreach (string field in util.DataSheet.FieldNames) {
+      if (field == "key" || m_assets.ContainsKey(field)) {
+        continue;
+      }
+      Localization data = util.FindOrCreateAsset<Localization>(util.BuildAssetPath(field));
+      data.m_keys.Clear();
+      data.m_values.Clear();
+      m_assets.Add(field, data);
+    }
+  }
+
+  public static void LateImport(IImportUtility util) {
+    util.DataSheet.GetColumn("key").Copy(out string[] keys);
+
+    foreach (Column column in util.DataSheet.GetColumns()) {
+      if (column.FieldName == "key") {
+        continue;
+      }
+      Localization data = m_assets[column.FieldName];
+      data.m_keys.AddRange(keys);
+      data.m_values.AddRange(column);
+    }
+  }
+#endif
+}
+```
 
 ## PotatoSheets Window
+Finally, you will need to link the Unity Editor to Google Sheets by using the _PotatoSheets_ editor window from inside Unity.
+
 Because the `com.potatointeractive.sheets` package is installed in your project, you can access the _PotatoSheets_ window from Unity by selecting **Window** > **Tools** > **Potato Sheets**
 ![Opening PotatoSheets window in Unity](img/potato_sheets_01.png)
 
@@ -313,4 +367,8 @@ If this is your first use, it should look something like this:
    | Asset Type | A comprehensive list of all ScriptableObject classes in your project that have the `[ContentAsset]` attribute. This will be the type used to create data when this profile is imported. |
    | Asset Directory | The path relative to your project folder where assets will be created on import. |
 5. After you have configured a *Profile*, you can import it by clicking the **Import** or **Import All** buttons
+
+
+
+
 
