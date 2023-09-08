@@ -259,11 +259,14 @@ public class MyDataClass : ScriptableObject {
 ```
 ### IImportUtility
 Your main way of handling imported data is via the `IImportUtility` interface provided by the `Import` and `LateImport` functions. It contains several helper functions to make the process easier.
-| Property/Function | Returns | Usage |
+| Property | Returns | Usage |
 |-----|-------|-----|
 | DataSheet | `DataSheet` | Object containing imported data retreived from a GoogleSheets worksheet. Read more usage tips in the [DataSheet](#DataSheet) section. |
 | PrimaryKey | `string` | The primary key value specified in the `ContentAsset` attribute of this class. |
 | AssetDirectory | `string` | Directory relative to the project folder where assets should be created (set from the [PotatoSheets Window](#PotatoSheets Window)) |
+
+| Function | Returns | Usage |
+|-----|-----|-----|
 | BuildAssetPath | `string` | Makes a valid asset path using the `AssetDirectory` and provided assetName and extension parameters |
 | FindOrCreateAsset | `ScriptableObject` | Finds or Creates a `ScriptableObject` of a given type at the given path. |
 | FindAssetByName | `bool`, `out UnityEngine.Object` | Looks for the asset of a given type and given name within your project's `AssetDatabase`. This can be built-in asset types like `Material` or `TextAsset` as well as other `ScriptableObject`s. Returns `TRUE` if the asset was found, `FALSE` if it was not. The asset itself will be in the output parameter |
@@ -271,12 +274,15 @@ Your main way of handling imported data is via the `IImportUtility` interface pr
 ### DataSheet
 The `DataSheet` property of `IImportUtility` contains all of the data that was retrieved from a worksheet specified in the [PotatoSheets Window](#PotatoSheetsWindow). You can get `Rows` and `Columns` to examine and serialize the data you've been given.
 
-| Property/Function | Returns | Usage |
+| Property | Returns | Usage |
 |-----|-----|-----|
 | Id | `WorksheetID` | returns a struct that gives the Spreadsheet ID and Worksheet Name of the `DataSheet` |
 | FieldNames | `IEnumerable<string>` | A set of all of the field names that were specified on the Worksheet |
 | RowCount | `int` | The number of rows in the `DataSheet` (not including frozen rows) |
 | ColumnCount | `int` | The number of columns in the `DataSheet` |
+
+| Function| Returns | Usage |
+|-----|------|------|
 | HasField | `bool` | Returns `TRUE` if the given `fieldName` exists on the `DataSheet`, `FALSE` if it does not |
 | GetFieldIndex | `int` | Returns the index of the given `fieldName` if it exists, `-1` if it does not |
 | GetRow | `Row` | Returns the `Row` of values of the specified `index` and `primaryKey` |
