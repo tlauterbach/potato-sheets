@@ -167,6 +167,9 @@ namespace PotatoSheets.Editor {
 
 		private void ImportContent(IImportUtility util, Dictionary<string,List<ContentBinding>> bindings) {
 			foreach (Row row in util.DataSheet.GetRows(PrimaryKey)) {
+				if (string.IsNullOrEmpty(row.PrimaryValue)) {
+					continue; // cannot import if there is no primary value
+				}
 				// find or create the asset specified by the primary value
 				string path = util.BuildAssetPath(row.PrimaryValue);
 				UnityEngine.Object asset = util.FindOrCreateAsset(m_assetType, path);
