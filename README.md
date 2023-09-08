@@ -10,7 +10,7 @@ A light-weight Google Sheets importer for Unity scriptable objects
 # Overview
 _PotatoSheets_ is an open source (MIT License) Google Sheets importer for Unity meant to quickly download data from Google Spreadsheets into your own Scriptable Objects data from the Editor to be used by your project at runtime.
 
-## Key Benefits of this Package
+## Key Benefits
 * _PotatoSheets_ is configurable to each organization's _Google Cloud_, meaning that you can supply your own **Client Secrets** and restrict usage of the importer to people within your organization.
   * A detailed installation guide to set up _Google Cloud_ is provided in the **Installation** section.
 * With both _Automatic_ and _Manual_ import types, engineers can customize as much or as little with how your data is created.
@@ -227,12 +227,67 @@ public class EnemyAttack {
 
   public EnemyAttack(string data) {
     string[] split = data.Split(",");
-    Verb = split[0];
-    AtkMultiplier = float.Parse(split[1]);
+    Verb = split[0].Trim();
+    AtkMultiplier = float.Parse(split[1].Trim());
   }
 }
 
 ```
+
+## Manual Importing
+In certain cases, you may need quite a bit more control over _what_ happens with all of your imported data for a `ContentAsset`. In such a case, you will need to do _Manual_ importing. There are slightly different things you need to do with your data class to use _Manual_ importing:
+
+```csharp
+using PotatoSheets;
+using UnityEditor;
+#if UNITY_EDITOR
+using PotatoSheets.Editor;
+#endif
+
+[ContentAsset(ImportType.Manual, "key")]
+public class MyDataClass : ScriptableObject {
+
+#if UNITY_EDITOR
+  public static void Import(IImportUtility util) {
+    // static Import method is required for Manual imports and occurs first
+  }
+  public static void LateImport(IImportUtility util) {
+    // static LateImport method is also required, and occurs after all ContentAssets have completed the Import stage
+  }
+#endif
+}
+```
+### IImportUtility
+Your main way of handling imported data is via the `IImportUtility` interface provided by the `Import` and `LateImport` functions. It contains several helper functions to make the process easier.
+| Property/Function | Returns | Usage |
+|-----|-------|-----|
+| DataSheet | `DataSheet` | Object containing imported data retreived from a GoogleSheets worksheet. Read more usage tips in the [DataSheet](#DataSheet) section. |
+| PrimaryKey | `string` | The primary key value specified in the `ContentAsset` attribute of this class. |
+| AssetDirectory | `string` | Directory relative to the project folder where assets should be created (set from the [PotatoSheets Window](#PotatoSheets Window)) |
+| BuildAssetPath | `string` | Makes a valid asset path using the `AssetDirectory` and provided assetName and extension parameters |
+| FindOrCreateAsset | `ScriptableObject` | Finds or Creates a `ScriptableObject` of a given type at the given path. |
+| FindAssetByName | `bool`, `out UnityEngine.Object` | Looks for the asset of a given type and given name within your project's `AssetDatabase`. This can be built-in asset types like `Material` or `TextAsset` as well as other `ScriptableObject`s. Returns `TRUE` if the asset was found, `FALSE` if it was not. The asset itself will be in the output parameter |
+
+### DataSheet
+The `DataSheet` property of `IImportUtility` contains all of the data that was retrieved from a worksheet specified in the [PotatoSheets Window](#PotatoSheetsWindow). You can get `Rows` and `Columns` to examine and serialize the data you've been given.
+
+| Property/Function | Returns | Usage |
+|-----|-----|-----|
+| Id | `WorksheetID` | returns a struct that gives the Spreadsheet ID and Worksheet Name of the `DataSheet` |
+| FieldNames | `IEnumerable<string>` | A set of all of the field names that were specified on the Worksheet |
+| RowCount | `int` | The number of rows in the `DataSheet` (not including frozen rows) |
+| ColumnCount | `int` | The number of columns in the `DataSheet` |
+| HasField | `bool` | Returns `TRUE` if the given `fieldName` exists on the `DataSheet`, `FALSE` if it does not |
+| GetFieldIndex | `int` | Returns the index of the given `fieldName` if it exists, `-1` if it does not |
+| GetRow | `Row` | Returns the `Row` of values of the specified `index` and `primaryKey` |
+| GetRows | `IEnumerable<Row>` | Returns all `Row`s of values on the `DataSheet` |
+| GetColumn | `Column` | Returns the `Column` of values of the given `fieldName` |
+| GetColumns | `IEnumerable<Column>` | Returns all `Column`s of values on the `DataSheet` |
+
+
+### Manual Import Example
+ A good example of something that likely needs _Manual_ importing is **Localization** data being in the same worksheet but requiring assets per column. 
+
 
 ## PotatoSheets Window
 Because the `com.potatointeractive.sheets` package is installed in your project, you can access the _PotatoSheets_ window from Unity by selecting **Window** > **Tools** > **Potato Sheets**
