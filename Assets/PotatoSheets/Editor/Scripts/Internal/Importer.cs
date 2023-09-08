@@ -1,8 +1,7 @@
-﻿using JsonParser;
+﻿using PotatoSheets.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Unity.EditorCoroutines.Editor;
 using UnityEditor;
@@ -24,7 +23,7 @@ namespace PotatoSheets.Editor {
 		private CredentialsBlob m_credentials;
 		private List<FetchRoutine<SpreadsheetBlob>> m_metaDataRoutines;
 		private List<FetchRoutine<ValueRangeBlob>> m_valuesRoutines;
-		private JsonParser.JsonParser m_jsonParser = new JsonParser.JsonParser();
+		private JsonParser m_jsonParser = new JsonParser();
 
 		private const string METADATA_ENDPOINT = "https://sheets.googleapis.com/v4/spreadsheets/{0}?fields=sheets.properties(title,gridProperties)";
 		private const string VALUES_ENDPOINT = "https://sheets.googleapis.com/v4/spreadsheets/{0}/values/{1}?majorDimension=ROWS";
@@ -192,7 +191,7 @@ namespace PotatoSheets.Editor {
 					WorksheetID worksheetID = new WorksheetID(profile.SheetID, profile.WorksheetName);
 					dataSheet = m_state.GetDataSheet(worksheetID);
 					bindings = m_state.GetAssetBindings(profile.AssetType);
-					util.Reset(dataSheet, profile.AssetDirectory);
+					util.Reset(dataSheet, bindings.PrimaryKey, profile.AssetDirectory);
 				
 					bindings.Import(util);
 					value += (1f / profiles.Count()) * 0.15f;
@@ -212,7 +211,7 @@ namespace PotatoSheets.Editor {
 					WorksheetID worksheetID = new WorksheetID(profile.SheetID, profile.WorksheetName);
 					dataSheet = m_state.GetDataSheet(worksheetID);
 					bindings = m_state.GetAssetBindings(profile.AssetType);
-					util.Reset(dataSheet, profile.AssetDirectory);
+					util.Reset(dataSheet, bindings.PrimaryKey, profile.AssetDirectory);
 
 					bindings.LateImport(util);
 					value += (1f / profiles.Count()) * 0.15f;

@@ -27,7 +27,7 @@ namespace PotatoSheets {
 		public int Count { get { return m_profiles.Count; } }
 
 		[SerializeField]
-		private List<Profile> m_profiles;
+		private List<Profile> m_profiles = new List<Profile>();
 		[HideInInspector,SerializeField]
 		private int m_nextProfileIndex = 0;
 

@@ -1,0 +1,7 @@
+root = true
+
+[*.{cs}]
+end_of_line = clrf
+charset = utf-8-bom
+indent_style = tab
+indent_size = 4

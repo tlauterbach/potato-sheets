@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonParser {
+namespace PotatoSheets.Json {
 
 	internal enum TokenType {
 		Null,

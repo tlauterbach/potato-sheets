@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace JsonParser {
+namespace PotatoSheets.Json {
 
 	internal class TokenStream {
 

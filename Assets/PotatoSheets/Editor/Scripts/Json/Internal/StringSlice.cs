@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace JsonParser {
+namespace PotatoSheets.Json {
 
 	/// <summary>
 	/// A string subsection that doesn't create 

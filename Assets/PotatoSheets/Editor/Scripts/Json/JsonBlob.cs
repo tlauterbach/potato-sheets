@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace JsonParser {
+namespace PotatoSheets.Json {
 
 	public enum JsonType {
 		Null,

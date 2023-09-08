@@ -13,6 +13,10 @@ namespace PotatoSheets.Editor {
 		/// </summary>
 		DataSheet DataSheet { get; }
 		/// <summary>
+		/// The PrimaryKey specified on the class' <see cref="ContentAssetAttribute"/>
+		/// </summary>
+		string PrimaryKey { get; }
+		/// <summary>
 		/// Directory relative to the project folder where any assets should be created
 		/// </summary>
 		string AssetDirectory { get; }
@@ -37,14 +41,6 @@ namespace PotatoSheets.Editor {
 		/// <returns>TRUE if the asset was found, FALSE if the asset was not found</returns>
 		bool FindAssetByName<T>(string name, out T asset) where T : UnityEngine.Object;
 		bool FindAssetByName(Type type, string name, out UnityEngine.Object asset);
-
-		/// <summary>
-		/// Uses reflection to set any <see cref="ContentAttribute"/> fields to the values
-		/// of the provided row data.
-		/// </summary>
-		/// <param name="target">object to apply data to</param>
-		/// <param name="data">data used to populate the target's fields/properties</param>
-		void SetContent(object target, Row data);
 
 	}
 

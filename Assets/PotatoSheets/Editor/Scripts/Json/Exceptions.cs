@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonParser {
+namespace PotatoSheets.Json {
 
 
 	public class JsonParseException : InvalidOperationException {

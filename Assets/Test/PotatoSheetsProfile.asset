@@ -13,14 +13,14 @@ MonoBehaviour:
   m_Name: PotatoSheetsProfile
   m_EditorClassIdentifier: 
   m_profiles:
-  - ProfileName: Profile22
-    SheetID: 
-    WorksheetName: Sheet1
-    AssetType: None
-    AssetDirectory: Assets/Data
-  - ProfileName: Profile23
-    SheetID: 
-    WorksheetName: Sheet1
-    AssetType: None
-    AssetDirectory: Assets/Data
-  m_nextProfileIndex: 24
+  - ProfileName: Test Auto Data
+    SheetID: 1GinRZT9MAiu-DpijASRgjIEaIDhFIeLIVhtj1Lnh1Sk
+    WorksheetName: TestAutoData
+    AssetType: TestAutoData, Assembly-CSharp
+    AssetDirectory: Assets/Test/Data/AutoData
+  - ProfileName: Test Manual Data
+    SheetID: 1GinRZT9MAiu-DpijASRgjIEaIDhFIeLIVhtj1Lnh1Sk
+    WorksheetName: TestManualData
+    AssetType: TestManualData, Assembly-CSharp
+    AssetDirectory: Assets/Test/Data/ManualData
+  m_nextProfileIndex: 25

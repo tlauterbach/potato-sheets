@@ -14,6 +14,7 @@ namespace PotatoSheets.Editor {
 		}
 
 		public DataSheet DataSheet { get; private set; }
+		public string PrimaryKey { get; private set; }
 		public string AssetDirectory { get; private set; }
 
 		public bool HasErrors { get { return m_state.HasErrors; } }
@@ -26,8 +27,9 @@ namespace PotatoSheets.Editor {
 			m_state = state;
 		}
 
-		public void Reset(DataSheet dataSheet, string assetDirectory) {
+		public void Reset(DataSheet dataSheet, string primaryKey, string assetDirectory) {
 			DataSheet = dataSheet;
+			PrimaryKey = primaryKey;
 			AssetDirectory = assetDirectory.Trim();
 			if (string.IsNullOrEmpty(AssetDirectory)) {
 				m_directoryType = DirectoryType.Empty;
@@ -87,10 +89,6 @@ namespace PotatoSheets.Editor {
 			}
 			asset = AssetDatabase.LoadAssetAtPath(AssetDatabase.GUIDToAssetPath(guids[0]), type);
 			return true;
-		}
-
-		public void SetContent(object target, Row data) {
-			throw new NotImplementedException();
 		}
 
 		public void LogError(string error) {

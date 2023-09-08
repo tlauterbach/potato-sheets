@@ -18,9 +18,7 @@ public class TestManualData : ScriptableObject {
 	private static Dictionary<string, TestManualData> m_assets;
 
 	public static void Import(IImportUtility util) {
-		if (m_assets == null) {
-			m_assets = new Dictionary<string, TestManualData>();
-		}
+		m_assets = new Dictionary<string, TestManualData>();
 		foreach (string field in util.DataSheet.FieldNames) {
 			if (field == "key" || m_assets.ContainsKey(field)) {
 				continue;

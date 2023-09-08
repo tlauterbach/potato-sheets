@@ -1,4 +1,4 @@
-﻿namespace JsonParser {
+﻿namespace PotatoSheets.Json {
 
 
 	internal class KeywordPattern : IPattern {
