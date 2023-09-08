@@ -263,7 +263,7 @@ Your main way of handling imported data is via the `IImportUtility` interface pr
 |-----|-------|-----|
 | DataSheet | `DataSheet` | Object containing imported data retreived from a GoogleSheets worksheet. Read more usage tips in the [DataSheet](#DataSheet) section. |
 | PrimaryKey | `string` | The primary key value specified in the `ContentAsset` attribute of this class. |
-| AssetDirectory | `string` | Directory relative to the project folder where assets should be created (set from the [PotatoSheets Window](#PotatoSheets Window)) |
+| AssetDirectory | `string` | Directory relative to the project folder where assets should be created (set from the [PotatoSheets Window](#PotatoSheets-Window)) |
 
 | Function | Returns | Usage |
 |-----|-----|-----|
@@ -272,7 +272,7 @@ Your main way of handling imported data is via the `IImportUtility` interface pr
 | FindAssetByName | `bool`, `out UnityEngine.Object` | Looks for the asset of a given type and given name within your project's `AssetDatabase`. This can be built-in asset types like `Material` or `TextAsset` as well as other `ScriptableObject`s. Returns `TRUE` if the asset was found, `FALSE` if it was not. The asset itself will be in the output parameter |
 
 ### DataSheet
-The `DataSheet` property of `IImportUtility` contains all of the data that was retrieved from a worksheet specified in the [PotatoSheets Window](#PotatoSheetsWindow). You can get `Rows` and `Columns` to examine and serialize the data you've been given.
+The `DataSheet` property of `IImportUtility` contains all of the data that was retrieved from a worksheet specified in the [PotatoSheets Window](#PotatoSheets-Window). You can get `Rows` and `Columns` to examine and serialize the data you've been given.
 
 | Property | Returns | Usage |
 |-----|-----|-----|
