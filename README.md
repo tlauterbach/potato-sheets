@@ -17,15 +17,17 @@ _PotatoSheets_ is an open source (MIT License) Google Sheets importer for Unity 
   * An explanation of the difference between and uses of both _Automatic_ and _Manual_ imports are in the **Usage** section.
 * _PotatoSheets_ **does not** have dependencies on Google's hefty NuGet libraries/.dlls or Newtonsoft.Json (both of which can cause conflicts with other packages) or any plugins and instead opts to use Google's REST API to manually handle importing.
   * The only dependencies for this package are as follows:
-    * `com.unity.editorcoroutines` `1.0.0`
-    * `com.unity.textmeshpro` `3.0.6`
-    * `com.unity.ugui` `1.0.0`
-    * `com.unity.modules.jsonserialize` `1.0.0`
-    * `com.unity.modules.imgui` `1.0.0`
-    * `com.unity.modules.ui` `1.0.0`
-    * `com.unity.modules.uielements` `1.0.0`
-    * `com.unity.modules.uielementsnative` `1.0.0`
-    * `com.unity.modules.unitywebrequest` `1.0.0`
+    | Dependency | Version |
+    |-----|-----|
+    | com.unity.editorcoroutines | 1.0.0 |
+    | com.unity.textmeshpro | 3.0.6 |
+    | com.unity.ugui | 1.0.0 |
+    | com.unity.modules.jsonserialize | 1.0.0 |
+    | com.unity.modules.imgui | 1.0.0 |
+    | com.unity.modules.ui | 1.0.0 |
+    | com.unity.modules.uielements | 1.0.0 |
+    | com.unity.modules.uielementsnative | 1.0.0 |
+    | com.unity.modules.unitywebrequest | 1.0.0 |
 
 # Installation
 
@@ -40,21 +42,15 @@ In order for _PotatoSheets_ to interface with Google's Sheets API, you need to h
 ### Sign-In and First Time Setup
 1. Access `https://console.cloud.google.com/` and sign in with a Google Account
    * You will be prompted to accept their terms and conditions
-   ![](img/google_cloud_01.png)
 2. Select **APIs & Services** > **Enabled APIs & Services**
-   ![](img/google_cloud_02.png)
 3. Choose **Select a Project**
-   ![](img/google_cloud_03.png)
 4. Choose **Create New Project**
-   ![](img/google_cloud_04.png)
 5. Make a name for your new project. _PotatoSheets_ should work fine.
    * If you have permission from your admin(s) or pay for an organization, select it for the **Location** field (otherwise, leave it as **No Organization**)
-   ![](img/google_cloud_05.png)
 6. Press **Create** and the project will take a moment to be created
 
 ### Enable Google Sheets API
 1. Once redirected or by accessing the **Enabled APIs & Services** section, click **ENABLE APIS AND SERVICES**
-   ![](img/google_cloud_06.png)
 2. From the **API Library**, search for `Google Sheets`
 3. Select the **Google Sheets API**
 4. Click **Enable** to enable the API
@@ -63,15 +59,11 @@ In order for _PotatoSheets_ to interface with Google's Sheets API, you need to h
 1. Select **OAuth consent screen** from the **APIs & Services** menu, then choose your **User Type**
    * If you have an organization, you should select **Internal**, as it is likely you'll only be using _PotatoSheets_ internally
    * If you don't have an organization, you can still use _PotatoSheets_ by selecting **External** and manually add accounts that can access this project. Your app will most likely always remain in testing mode and not need to be verified.
-   ![Configure OAuth Step 1](img/google_cloud_11.png)
 2. Click **Create**
 3. Enter in an **App name** (_PotatoSheets_ should work fine), a support email (likely your own or your group/company's support email address), and enter the same email for the developer contact information
-   ![Configure OAuth Step 3](img/google_cloud_12.png)
 4. Click **SAVE AND CONTINUE** at the bottom
 5. Next, you will be adding *Scopes*. Click **ADD OR REMOVE SCOPES**
-   ![Configure OAuth Step 5](img/google_cloud_13.png)
 6. Page through the scopes and find the **Google Sheets API** and select the `../auth/spreadsheets.readonly` option
-   ![Configure OAuth Step 5](img/google_cloud_14.png)
 7. Click **UPDATE** at the bottom of the Scopes menu
 8. Click **SAVE AND CONTINUE** of the Edit app registration page
 9. Next, you will be adding *Test Users*. Click **ADD USERS** and enter any google email addresses that will need to use PotatoSheets
@@ -80,12 +72,11 @@ In order for _PotatoSheets_ to interface with Google's Sheets API, you need to h
 
 ### Credentials Setup
 1. Select **Credentials** from the **APIs & Services** menu, then click **Create Credentials** > **OAuth client ID**
-   ![Credentials Setup](img/google_cloud_10.png)
 2. Select **Desktop app** from the dropdown selection menu and name it (_PotatoSheets Client_ is fine)
 3. Click **CREATE**
 4. Download the **Client secret** JSON file by clicking **DOWNLOAD JSON**
    * This option can also be selected by clicking on the *OAuth 2.0 Client IDs* link and clicking the **DOWNLOAD JSON** button
-6. Place your downloaded JSON file in your project folder under `project-name/tools/potato-sheets/` and rename it to `client-secret.json`
+5. Place your downloaded JSON file in your project folder under `project-name/tools/potato-sheets/` and rename it to `client-secret.json`
    * the folder `tools` should be in the same directory as your project's `Assets` folder
    * **NOTE:** you will want to make sure each user downloads this client secret file individually and NOT commit it to source control
 
@@ -106,7 +97,8 @@ Your **ImportType** options are *Automatic* and *Manual*, and you primary key wi
 ## Automatic Importing
 *Automatic* importing is relatively simple; after you've created your class, all you need to do is mark up your fields or properties with the `Content` attribute.
 
-Consider this example data...
+Consider that this example data...
+
 ![](img/potato_sheets_04.png)
 
 ...could look something like this in code:
@@ -120,8 +112,12 @@ public class EnemyData : ScriptableObject {
   [Content("name")]
   public string Name;
 
-  [SerializeField]
   [Content("health")]
+  public int Health {
+    get { return m_health; }
+    set { m_health = value; }
+  }
+  [SerializeField]
   private int m_health;
 
   [Content("atk")]
@@ -131,16 +127,112 @@ public class EnemyData : ScriptableObject {
 ```
 String parameters in the `Content` attribute would be the name of the column in GoogleSheets that the data will be read from. It is valid to have multiple `Content` attributes for a field, in case different worksheets use different column titles. The furthest column to the right will usally be the one that 'wins' if there are multiple columns in the same worksheet per field/property.
 
+Each row of data from the spreadsheet will create a new asset named using the *primary key*. So in our example, `Enemy_Tiger.asset`, `Enemy_Snake.asset`, etc. would be created.
+
+
 ### Supported Automatic Import Field/Property Types
-Currently, Lists and Dictionaries (or any other Generic Collections) are not supported for *Automatic* importing. However, you can support them yourself with *Manual* importing if you need to handle them.
 | Group | Types |
 |-----|-----|
 | System Structs | `string` `int` `uint` `short` `ushort` `long` `ulong` `byte` `sbyte` `char` `float` `double` `decimal` `DateTime` |
 | Unity Structs | `Vector2` `Vector3` `Vector4` `Vector2Int` `Vector3Int` `Bounds` `BoundsInt` `Rect` `RectInt` `Color` `Color32` |
-| Unity Classes | *`UnityEngine.Object` `ScriptableObject` |
+| Unity Classes | `UnityEngine.Object`† `ScriptableObject`†† |
 | Enums | `int` `uint` `short` `ushort` `long` `ulong` `byte` `sbyte`|
 | User Structs and Classes | requires a constructor with `string` parameter |
 
+† `UnityEngine.Object` includes built-in Unity asset types such as `Material`, `Texture2D`, and `TextAsset`
+
+†† `ScriptableObject` includes any user-created classes that inherit from `ScriptableObject` so that imported assets can link to eachother
+
+Currently, Lists and Dictionaries (or any other Generic Collections) are not supported for *Automatic* importing. However, you can support them yourself with *Manual* importing if you need to handle them.
+
+### Array Support
+Arrays are supported, but you need to change a couple of things about your data and asset class in order to handle them.
+
+Consider:
+
+![](img/potato_sheets_05.png)
+
+The values within the **Items** column need to be separated by a character (a 'delimiter') you know you don't need in processing the data. In the example, it is a comma, but it can be any character you wish. You then need to specify the delimiter in your `Content` attribute to let the importer know how to split your data.
+
+```csharp
+using PotatoSheets;
+using UnityEngine;
+
+[ContentAsset(ImportType.Automatic,"id")]
+public class EnemyData : ScriptableObject {
+  
+  [Content("name")]
+  public string Name;
+
+  [Content("items", Delimiter = ",")]
+  public string[] ItemNames;
+
+}
+```
+
+### Complex Automatic Import Example
+
+![](img/potato_sheets_06.png) 
+
+![](img/potato_sheets_07.png)
+
+```csharp
+using PotatoSheets;
+using UnityEngine;
+
+[ContentAsset(ImportType.Automatic,"id")]
+public class EnemyData : ScriptableObject {
+  
+  [Content("name")]
+  public string Name;
+
+  [Content("health")]
+  public uint Health;
+
+  [Content("baseAttack")]
+  public uint BaseAttack;
+
+  [Content("attacks", Delimiter = "|")]
+  public EnemyAttack[] Attacks;
+
+  [Content("sprite")]
+  public Sprite BattleSprite;
+
+  [Content("droppedItems", Delimiter = "/")]
+  public ItemData[] DroppedItems;
+
+}
+
+[ContentAsset(ImportType.Automatic,"id")]
+public class ItemData : ScriptableObject {
+  [Content("name")]
+  public string Name;
+
+  [Content("worth")]
+  public uint Worth;
+
+  [Content("consumable")]
+  public bool IsConsumable;
+
+  [Content("searchTags", Delimiter = "|")]
+  public string[] SearchTags;
+  
+}
+
+[Serializable]
+public class EnemyAttack {
+
+  public string Verb;
+  public float AtkMultiplier;
+
+  public EnemyAttack(string data) {
+    string[] split = data.Split(",");
+    Verb = split[0];
+    AtkMultiplier = float.Parse(split[1]);
+  }
+}
+
+```
 
 ## PotatoSheets Window
 Because the `com.potatointeractive.sheets` package is installed in your project, you can access the _PotatoSheets_ window from Unity by selecting **Window** > **Tools** > **Potato Sheets**
