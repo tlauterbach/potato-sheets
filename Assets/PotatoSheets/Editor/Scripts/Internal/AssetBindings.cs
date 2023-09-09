@@ -150,17 +150,31 @@ namespace PotatoSheets.Editor {
 
 		private void AddBinding(ILogger logger, Dictionary<string,List<ContentBinding>> bindings, ContentAttribute attr, FieldInfo field) {
 			List<ContentBinding> list;
-			if (!bindings.TryGetValue(attr.Alias, out list)) {
+			string name;
+			if (string.IsNullOrEmpty(attr.Alias)) {
+				// use the field property name instead
+				name = field.Name;
+			} else {
+				name = attr.Alias;
+			}
+			if (!bindings.TryGetValue(name, out list)) {
 				list = new List<ContentBinding>();
-				bindings.Add(attr.Alias, list);
+				bindings.Add(name, list);
 			}
 			list.Add(new ContentBinding(this,logger, field, attr.Delimiter));
 		}
 		private void AddBinding(ILogger logger, Dictionary<string, List<ContentBinding>> bindings, ContentAttribute attr, PropertyInfo property) {
 			List<ContentBinding> list;
-			if (!bindings.TryGetValue(attr.Alias, out list)) {
+			string name;
+			if (string.IsNullOrEmpty(attr.Alias)) {
+				// use the field property name instead
+				name = property.Name;
+			} else {
+				name = attr.Alias;
+			}
+			if (!bindings.TryGetValue(name, out list)) {
 				list = new List<ContentBinding>();
-				bindings.Add(attr.Alias, list);
+				bindings.Add(name, list);
 			}
 			list.Add(new ContentBinding(this,logger, property, attr.Delimiter));
 		}

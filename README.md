@@ -3,7 +3,7 @@ A light-weight Google Sheets importer for Unity scriptable objects
 
 | Package Name | Package Version | Unity Version |
 |-----|-----|-----|
-| com.potatointeractive.sheets | 1.0.2 | 2021.3.x |
+| com.potatointeractive.sheets | 1.0.3 | 2021.3.x |
 
 [Changelog](CHANGELOG.md)
 
