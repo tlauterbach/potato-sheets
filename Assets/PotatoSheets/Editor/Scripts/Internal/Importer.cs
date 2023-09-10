@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Unity.EditorCoroutines.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -21,6 +22,7 @@ namespace PotatoSheets.Editor {
 		private EditorCoroutine m_importRoutine;
 		private ImportState m_state;
 		private CredentialsBlob m_credentials;
+		private CallbackBindings m_callbacks;
 		private List<FetchRoutine<SpreadsheetBlob>> m_metaDataRoutines;
 		private List<FetchRoutine<ValueRangeBlob>> m_valuesRoutines;
 		private JsonParser m_jsonParser = new JsonParser();
@@ -64,6 +66,9 @@ namespace PotatoSheets.Editor {
 					state.AddAssetBinding(profile.AssetType, binding);
 				}
 			}
+			// confirm that all callbacks are bound properly as well
+			m_callbacks = new CallbackBindings(state);
+
 			if (state.HasErrors) {
 				state.Complete();
 				return;
@@ -225,8 +230,14 @@ namespace PotatoSheets.Editor {
 			}
 
 			// 10. save the asset database now that everything is imported
-			SetProgress("Saving Assets...", 0.95f);
+			SetProgress("Saving Assets...", 0.9f);
 			AssetDatabase.SaveAssets();
+			yield return null;
+
+			// 11. send callbacks to ContentCallback attribute holders
+			SetProgress("Sending Callbacks...", 0.95f);
+			m_callbacks.OnComplete();
+			yield return null;
 
 			// x. Cleanup and complete the import process
 			Cleanup();
@@ -239,14 +250,16 @@ namespace PotatoSheets.Editor {
 
 		private void Cleanup() {
 			m_state.Complete();
-			EditorCoroutineUtility.StopCoroutine(m_importRoutine);
-
+			if (m_importRoutine != null) {
+				EditorCoroutineUtility.StopCoroutine(m_importRoutine);
+			}
 			CleanupFetchSet(m_metaDataRoutines);
 			CleanupFetchSet(m_valuesRoutines);
 			m_metaDataRoutines = null;
 			m_valuesRoutines = null;
 
 			m_importRoutine = null;
+			m_callbacks = null;
 		}
 		private void CleanupFetchSet<T>(IEnumerable<FetchRoutine<T>> set) {
 			if (set != null) {

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [ContentAsset(ImportType.Manual, "key")]
+[ContentCallbacks]
 public class TestManualData : ScriptableObject {
 
 	[SerializeField]
@@ -42,6 +43,10 @@ public class TestManualData : ScriptableObject {
 			data.m_keys.AddRange(keys);
 			data.m_values.AddRange(column);
 		}
+	}
+
+	public static void OnImportComplete() {
+		Debug.Log("Import Complete");
 	}
 
 #endif

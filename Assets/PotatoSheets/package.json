@@ -1,6 +1,6 @@
 {
   "name": "com.potatointeractive.sheets",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "displayName": "PotatoSheets",
   "description": "Light-weight GoogleSheets to Unity ScriptableObject importer for Unity",
   "unity": "2021.3",
