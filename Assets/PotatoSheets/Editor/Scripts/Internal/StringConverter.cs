@@ -199,13 +199,18 @@ namespace PotatoSheets.Editor {
 			}
 		}
 		private static object ToChar(string value) {
-			if (value.Length >= 1) {
+			if (string.IsNullOrEmpty(value)) {
+				return default(char);
+			} else if (value.Length >= 1) {
 				return value[0];
 			} else {
 				return default(char);
 			}
 		}
 		private static object ToBool(string value) {
+			if (string.IsNullOrEmpty(value)) {
+				return default(bool);
+			}
 			string lower = value.ToLower();
 			if (lower == "true") {
 				return true;
@@ -283,7 +288,9 @@ namespace PotatoSheets.Editor {
 			return new BoundsInt((int)floats[0], (int)floats[1], (int)floats[2], (int)floats[3], (int)floats[4], (int)floats[5]);
 		}
 		private static object ToColor(string value) {
-			if (value.Length > 0 && value[0] == '#') {
+			if (string.IsNullOrEmpty(value)) {
+				return default(Color);
+			} else if (value.Length > 0 && value[0] == '#') {
 				if (ColorUtility.TryParseHtmlString(value, out Color result)) {
 					return result;
 				} else {
@@ -295,7 +302,9 @@ namespace PotatoSheets.Editor {
 			}
 		}
 		private static object ToColor32(string value) {
-			if (value.Length > 0 && value[0] == '#') {
+			if (string.IsNullOrEmpty(value)) {
+				return default(Color32);
+			} else if (value.Length > 0 && value[0] == '#') {
 				if (ColorUtility.TryParseHtmlString(value, out Color result)) {
 					return (Color32)result;
 				} else {
